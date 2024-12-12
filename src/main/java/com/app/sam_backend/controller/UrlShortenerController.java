@@ -250,4 +250,9 @@ public class UrlShortenerController {
 //        }
 //    }
 
+    @GetMapping("/jaan")
+    String abc() {
+        return"I love you my jaanu. kissi dedo";
+    }
+
 }
