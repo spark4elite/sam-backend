@@ -129,16 +129,16 @@ public class UrlShortenerController {
 
                 // Modify HTML content
                 String body = response.getBody();
-//                String modifiedHtml = body.replaceAll(
-//                        "(href|src)=\"(https?:)?//([^\"]+)\"",
-//                        "$1=\"http://localhost:8080/proxy?url=https://$3\""
-//                );
+                String modifiedHtml = body.replaceAll(
+                        "(href|src)=\"(https?:)?//([^\"]+)\"",
+                        "$1=\"https://sam-backend-production.up.railway.app/proxy?url=https://$3\""
+                );
 
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.TEXT_HTML);
 
-                return new ResponseEntity<>(body, headers, HttpStatus.OK);
+                return new ResponseEntity<>(modifiedHtml, headers, HttpStatus.OK);
             }
 
             // Return other content types as-is
