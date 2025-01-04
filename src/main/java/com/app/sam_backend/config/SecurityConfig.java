@@ -21,13 +21,18 @@ public class SecurityConfig {
         http
                 .authorizeRequests()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")  // Secure Swagger UI
-                .permitAll()
-                .requestMatchers(HttpMethod.POST, "/shorten")  // Secure POST /shorten
-                .authenticated()  // Require authentication for POST /shorten
-                .requestMatchers(HttpMethod.GET, "/all")  // Secure POST /all
-                .authenticated()  // Require authentication for GET /all
-                .requestMatchers(HttpMethod.GET, "/{shortenedUrl}")  // Make GET /{shortenedUrl} public
-                .permitAll()  // Allow unauthenticated access to GET /{shortenedUrl}
+                .authenticated()
+                // Require authentication for POST /shorten
+                .requestMatchers(HttpMethod.POST, "/shorten").authenticated()
+                // Require authentication for GET /all
+                .requestMatchers(HttpMethod.GET, "/all").authenticated()
+                // Require authentication for GET /searchByName
+                .requestMatchers(HttpMethod.GET, "/searchByName").authenticated()
+                // Require authentication for GET /searchByLocation
+                .requestMatchers(HttpMethod.GET, "/searchByLocation").authenticated()
+                // Allow public access to GET /{shortenedUrl}
+                .requestMatchers(HttpMethod.GET, "/{shortenedUrl}").permitAll()
+                // Any other request requires authentication
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()  // Enable form login
