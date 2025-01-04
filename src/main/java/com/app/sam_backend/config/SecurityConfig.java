@@ -21,7 +21,7 @@ public class SecurityConfig {
         http
                 .authorizeRequests()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")  // Secure Swagger UI
-                .hasRole("ADMIN")  // Only users with ADMIN role can access Swagger UI
+                .permitAll()
                 .requestMatchers(HttpMethod.POST, "/shorten")  // Secure POST /shorten
                 .authenticated()  // Require authentication for POST /shorten
                 .requestMatchers(HttpMethod.GET, "/all")  // Secure POST /all
