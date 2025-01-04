@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +32,6 @@ public class UrlShortenerController {
     @Autowired
     UrlShortnerService urlShortnerService;
 
-    // Generate the shortened URL and store it in the database
     @PostMapping("/shorten")
     @Operation(
             summary = "API to add the URL to the Database"
@@ -49,9 +50,29 @@ public class UrlShortenerController {
             return "Invalid URL";
         }
 
+        // Check if the full URL is valid by making an HTTP request
+        if (!isValidUrl(fullUrl)) {
+            return "Invalid URL";
+        }
+
         Optional<String> shortenedUrl = urlShortnerService.createShortenedUrl(name, location, version, fullUrl);
 
-        return shortenedUrl.map(s -> domain + "/" + s + "?name=" + name + "&location=" + location + "&version=" + version).orElse("Entry already exists, please upgrade the version.");
+        return shortenedUrl.map(s -> domain + "/" + s + "?name=" + name + "&location=" + location + "&version=" + version)
+                .orElse("Entry already exists, please upgrade the version.");
+    }
+
+    private boolean isValidUrl(String url) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            // Send a GET request to the full URL
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            // Check if the status code is 200 OK
+            return response.getStatusCode() == HttpStatus.OK;
+        } catch (Exception e) {
+            // If any exception occurs (e.g., invalid URL, connection failure), return false
+            return false;
+        }
     }
 
     @GetMapping("/all")
@@ -131,13 +152,17 @@ public class UrlShortenerController {
         return mapping
                 .map(redirect -> {
                     String originalUrl = redirect.getFullUrl();
-                    // Create HTML content with iframe
-                    String htmlContent = "<html><body>" +
+                    // Create HTML content with iframe and title properly structured
+                    String htmlContent = "<html>" +
+                            "<head><title>Inch Art Designs</title></head>" +
+                            "<body>" +
                             "<iframe src='" + originalUrl + "' width='100%' height='100%' style='border:none;'></iframe>" +
-                            "</body></html>";
+                            "</body>" +
+                            "</html>";
                     return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(htmlContent);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
+
     }
 
 }
