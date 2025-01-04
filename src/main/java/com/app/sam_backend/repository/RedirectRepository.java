@@ -9,5 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface RedirectRepository extends JpaRepository<Redirect, Long> {
-    Optional<Redirect> findByShortenedUrl(String shortenedUrl);
+    Optional<Redirect> findByShortenedUrlAndNameAndLocationAndVersion(String shortenedUrl, String name, String location, String version);
+
+    Optional<Redirect> findByNameAndLocationAndVersion(String name, String location, String version);
 }

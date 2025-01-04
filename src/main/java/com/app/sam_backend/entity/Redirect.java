@@ -2,40 +2,39 @@ package com.app.sam_backend.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(
+        name = "redirect",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "location", "version"})  // Enforcing the unique combination
+)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Redirect {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String shortenedUrl;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    @Column(columnDefinition = "TEXT") // Use TEXT for long URLs
+    @Column(name = "location", nullable = false)
+    private String location;
+
+    @Column(name = "version")
+    private String version;
+
+    @Column(name = "full_url", nullable = false, columnDefinition = "TEXT")
     private String fullUrl;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "shortened_url", nullable = false)
+    private String shortenedUrl;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getShortenedUrl() {
-        return shortenedUrl;
-    }
-
-    public void setShortenedUrl(String shortenedUrl) {
-        this.shortenedUrl = shortenedUrl;
-    }
-
-    public String getFullUrl() {
-        return fullUrl;
-    }
-
-    public void setFullUrl(String fullUrl) {
-        this.fullUrl = fullUrl;
-    }
 }
