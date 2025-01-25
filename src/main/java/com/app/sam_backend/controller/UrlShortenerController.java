@@ -1,11 +1,13 @@
 package com.app.sam_backend.controller;
 
+import com.app.sam_backend.entity.ChangeStatusRequest;
 import com.app.sam_backend.entity.Redirect;
 import com.app.sam_backend.repository.RedirectRepository;
 import com.app.sam_backend.service.UrlShortnerService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,14 +52,16 @@ public class UrlShortenerController {
             return "Invalid URL";
         }
 
+        fullUrl = fullUrl.trim();
+
         // Check if the full URL is valid by making an HTTP request
         if (!isValidUrl(fullUrl)) {
             return "Invalid URL";
         }
 
-        Optional<String> shortenedUrl = urlShortnerService.createShortenedUrl(name, location, version, fullUrl);
+        Optional<String> shortenedUrl = urlShortnerService.createShortenedUrl(name.trim(), location.trim(), version.trim(), fullUrl);
 
-        return shortenedUrl.map(s -> domain + "/" + s + "?name=" + name + "&location=" + location + "&version=" + version)
+        return shortenedUrl.map(s -> domain + "/" + s + "?name=" + name.trim() + "&location=" + location.trim() + "&version=" + version.trim())
                 .orElse("Entry already exists, please upgrade the version.");
     }
 
@@ -149,12 +153,24 @@ public class UrlShortenerController {
         // Fetch the corresponding redirect mapping from the database
         Optional<Redirect> mapping = redirectRepository.findByShortenedUrlAndNameAndLocationAndVersion(shortenedUrl, name, location, version);
 
+        if (mapping.isPresent()) {
+            String htmlContent = "<html>" +
+                    "<head><title>The Elite Touch</title></head>" +
+                    "<body>" +
+                    "<h1>This url is blocked, contact admin for more details :)</h1>" +
+                    "</body>" +
+                    "</html>";
+            if (!mapping.get().isStatus()) {
+                return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(htmlContent);
+            }
+        }
+
         return mapping
                 .map(redirect -> {
                     String originalUrl = redirect.getFullUrl();
                     // Create HTML content with iframe and title properly structured
                     String htmlContent = "<html>" +
-                            "<head><title>Inch Art Designs</title></head>" +
+                            "<head><title>The Elite Touch</title></head>" +
                             "<body>" +
                             "<iframe src='" + originalUrl + "' width='100%' height='100%' style='border:none;'></iframe>" +
                             "</body>" +
@@ -165,5 +181,28 @@ public class UrlShortenerController {
 
     }
 
+
+    @PatchMapping("/changeStatus")
+    @Operation(
+            summary = "API to change the status of a Redirect",
+            description = "Allows admin to update the status (active/inactive) of a Redirect entry by its ID.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Request body containing the ID and new status of the Redirect entry",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ChangeStatusRequest.class))
+            )
+    )
+    public ResponseEntity<String> changeStatus(@RequestParam(name = "id") Long id, @RequestParam(name = "status") boolean status) {
+        Optional<Redirect> redirectOptional = redirectRepository.findById(id);
+
+        if (redirectOptional.isPresent()) {
+            Redirect redirect = redirectOptional.get();
+            redirect.setStatus(status);
+            redirectRepository.save(redirect);
+            return ResponseEntity.ok("Status updated successfully.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Redirect entry not found.");
+        }
+    }
 }
 

@@ -37,4 +37,7 @@ public class Redirect {
     @Column(name = "shortened_url", nullable = false)
     private String shortenedUrl;
 
+    @Column(name = "status", nullable = false)
+    private boolean status;
+
 }

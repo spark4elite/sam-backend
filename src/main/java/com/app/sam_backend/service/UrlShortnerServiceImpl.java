@@ -31,6 +31,7 @@ public class UrlShortnerServiceImpl implements  UrlShortnerService{
                 .version(version)
                 .shortenedUrl(shortenedUrl)
                 .fullUrl(fullUrl)
+                .status(true)
                 .build();
 
         redirectRepository.save(redirect);

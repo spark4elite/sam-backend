@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/searchByName").authenticated()
                 // Require authentication for GET /searchByLocation
                 .requestMatchers(HttpMethod.GET, "/searchByLocation").authenticated()
+                // Require authentication for PATCH /changeStatus
+                .requestMatchers(HttpMethod.PATCH, "/changeStatus").authenticated()
                 // Allow public access to GET /{shortenedUrl}
                 .requestMatchers(HttpMethod.GET, "/{shortenedUrl}").permitAll()
                 // Any other request requires authentication
